@@ -1,0 +1,542 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A Special Gift for Didi ✨</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Premium Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Nunito:wght@400;600;800&family=Playfair+Display:ital,wght@0,600;0,800;1,600&display=swap" rel="stylesheet">
+
+  <style>
+    /* Global Styling */
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: linear-gradient(135deg, #f3e7e9 0%, #e3eeff 99%, #e3eeff 100%);
+      min-height: 100vh;
+      overflow-x: hidden;
+      margin: 0;
+      padding: 0;
+    }
+    
+    .serif-title { font-family: 'Playfair Display', serif; }
+    .handwriting { font-family: 'Caveat', cursive; letter-spacing: 1px; }
+
+    /* Page Transitions */
+    .page-container {
+      display: none;
+      animation: slideUpFade 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    }
+    .page-container.active { display: flex; }
+    
+    @keyframes slideUpFade {
+      from { opacity: 0; transform: translateY(30px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* Takda Lock Animation */
+    .lock-box { transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+    .shackle { transition: transform 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55); transform-origin: left bottom; }
+    .lock-box.unlocked .shackle { transform: translateY(-15px) rotate(-30deg); }
+    .lock-box.unlocked .lock-body { animation: glowPulse 1.5s infinite alternate; background: linear-gradient(to right, #4facfe 0%, #00f2fe 100%); }
+    
+    @keyframes glowPulse {
+      0% { box-shadow: 0 0 15px rgba(0, 242, 254, 0.4); }
+      100% { box-shadow: 0 0 30px rgba(0, 242, 254, 0.8), 0 0 50px rgba(79, 172, 254, 0.6); }
+    }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-10px); }
+      40%, 80% { transform: translateX(10px); }
+    }
+    .shake-err { animation: shake 0.4s ease-in-out; }
+
+    /* Music Visualizer Bars */
+    .music-bars { display: flex; gap: 4px; height: 30px; align-items: flex-end; }
+    .bar { width: 6px; background: #fff; border-radius: 4px; opacity: 0.2; transition: all 0.2s; }
+    .playing .bar { opacity: 1; animation: jump 1s infinite ease-in-out alternate; }
+    .playing .bar:nth-child(1) { animation-delay: 0.1s; }
+    .playing .bar:nth-child(2) { animation-delay: 0.4s; }
+    .playing .bar:nth-child(3) { animation-delay: 0.2s; }
+    .playing .bar:nth-child(4) { animation-delay: 0.5s; }
+    .playing .bar:nth-child(5) { animation-delay: 0.3s; }
+    @keyframes jump { 0% { height: 5px; } 100% { height: 30px; background: #ff9a9e; } }
+
+    /* --- REAL BOOK ALBUM ANIMATION (Right Page Only) --- */
+    .album-book {
+      position: relative;
+      width: 100%;
+      max-width: 320px;
+      aspect-ratio: 4/3; /* Perfect for landscape photos */
+      perspective: 1500px;
+      border-radius: 4px 16px 16px 4px;
+      background: #f8fafc;
+      /* Simulated Book Spine */
+      box-shadow: inset 15px 0 20px rgba(0,0,0,0.08), 5px 10px 25px rgba(0,0,0,0.15);
+      border-left: 10px solid #cbd5e1;
+    }
+    
+    .album-page {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      transform-origin: left center;
+      transition: transform 0.8s ease-in-out, opacity 0.8s ease-in-out;
+      background: #ffffff;
+      border-radius: 4px 16px 16px 4px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #e2e8f0;
+      border-left: 2px solid #cbd5e1;
+    }
+
+    /* Page Turn Animation States */
+    .album-page.active {
+      transform: rotateY(0deg);
+      opacity: 1;
+      z-index: 10;
+    }
+    .album-page.next-ready {
+      transform: rotateY(0deg);
+      opacity: 1;
+      z-index: 5; /* Waiting right beneath active page */
+    }
+    .album-page.flipped {
+      /* Flips to left like a real book, fades out to prevent mobile clipping */
+      transform: rotateY(-120deg);
+      opacity: 0; 
+      z-index: 15;
+    }
+    .album-page.hidden-page {
+      opacity: 0;
+      z-index: 1;
+    }
+
+    /* Image styling inside album to keep landscape */
+    .album-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 8px;
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+      background-color: #f1f5f9;
+    }
+
+    /* Confetti */
+    .particle { position: absolute; width: 10px; height: 10px; opacity: 0.9; pointer-events: none; z-index: 1000; border-radius: 50%; }
+    .scroll-hide::-webkit-scrollbar { display: none; }
+  </style>
+</head>
+<body class="flex justify-center items-center p-4">
+
+  <!-- Mobile Screen Frame -->
+  <div class="w-full max-w-[400px] bg-white/60 backdrop-blur-2xl rounded-[40px] shadow-2xl border-[6px] border-white/90 overflow-hidden relative flex flex-col justify-between h-[90vh]">
+    
+    <!-- HEADER -->
+    <div class="px-6 py-4 flex justify-between items-center bg-white/50 border-b border-purple-100/50 z-20">
+      <button onclick="prevPage()" id="backBtn" class="px-3 py-1.5 bg-white/80 rounded-full text-[11px] font-bold text-slate-600 shadow-sm transition active:scale-95 flex items-center gap-1 opacity-0 pointer-events-none">
+        <i class="fa-solid fa-arrow-left"></i> Back
+      </button>
+      <span class="text-[10px] tracking-[0.2em] text-purple-600 font-extrabold uppercase" id="pageIndicator">STEP 1</span>
+      <div class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
+    </div>
+
+    <!-- MAIN CONTENT AREA -->
+    <div class="flex-grow relative overflow-y-auto scroll-hide p-6 flex flex-col items-center">
+
+      <!-- ================= PAGE 1: LOCK SCREEN ================= -->
+      <div id="page1" class="page-container active w-full flex-col items-center text-center space-y-8 mt-4">
+        <div>
+          <h1 class="serif-title text-4xl font-extrabold text-slate-800 tracking-wide">Locked ✨</h1>
+          <p class="text-xs text-slate-500 font-bold uppercase tracking-widest mt-2">Enter secret code</p>
+        </div>
+
+        <!-- Takda Lock Graphic -->
+        <div id="lockWrapper" class="lock-box relative w-24 h-32 my-4 mx-auto">
+          <svg class="shackle absolute top-0 left-5 w-14 h-16" viewBox="0 0 50 60" fill="none">
+            <path d="M 10 50 L 10 25 C 10 10, 40 10, 40 25 L 40 50" stroke="#cbd5e1" stroke-width="8" stroke-linecap="round"/>
+          </svg>
+          <div class="lock-body absolute bottom-0 left-0 w-24 h-20 bg-slate-800 rounded-2xl shadow-xl flex items-center justify-center border-b-4 border-slate-900 transition-all duration-500">
+            <div class="w-5 h-5 bg-white/20 rounded-full relative flex items-center justify-center">
+              <div class="w-2 h-2 bg-white rounded-full"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="w-full space-y-4 mt-8">
+          <input type="password" id="passInput" placeholder="Password..." class="w-full px-6 py-4 rounded-full border-2 border-purple-100 bg-white/90 text-center font-bold tracking-widest text-slate-800 shadow-inner focus:outline-none focus:border-purple-400 transition-all">
+          <button onclick="unlockVault()" class="w-full py-4 bg-gradient-to-r from-violet-500 to-fuchsia-500 hover:from-violet-600 hover:to-fuchsia-600 text-white font-black rounded-full shadow-lg hover:shadow-xl active:scale-95 transition-all tracking-widest uppercase text-xs">
+            Open Vault
+          </button>
+          <p id="errorTxt" class="text-xs text-rose-500 font-bold opacity-0 transition-opacity">Galat password hai Didi! 🥺</p>
+        </div>
+      </div>
+
+      <!-- ================= PAGE 2: KHUSHI JI NOTE ================= -->
+      <div id="page2" class="page-container w-full flex-col items-center text-center space-y-6">
+        <span class="px-4 py-1.5 bg-amber-100 text-amber-700 text-[10px] font-black rounded-full uppercase tracking-widest">📝 The Beginning</span>
+        <h2 class="serif-title text-3xl font-bold text-slate-800">Khushi Ji Ka Zikr</h2>
+        
+        <div class="w-full bg-[#fefce8] p-6 rounded-3xl border border-amber-200 shadow-sm relative text-left">
+          <div class="absolute -top-3 left-1/2 -translate-x-1/2 w-12 h-4 bg-red-400/40 rotate-[-3deg]"></div>
+          <p class="handwriting text-[22px] text-slate-700 leading-snug">
+            Ye website bhi bus Khushi ji ki vajah se ban payi hai kyunki agar vo dost nahi hoti toh shayad ye website nahi bana sakta tha... <br><br>
+            And mein ek chiz bolunga jo mujhe Khushi mein achi lagti hai - vo sabki help karti hai and apni family ki har baat maanti hai, special apne Papa ji ki. <br><br>
+            Bus ye choti chiz hai, toh bhaut kuch batane ke liye par abhi bus itna hi bataunga kyunki aage bhi website dekhni hai toh ab aap aage dekh sakte ho! ❤️
+          </p>
+        </div>
+        <button onclick="nextPage()" class="px-8 py-3 bg-slate-900 text-white font-bold rounded-full shadow-lg active:scale-95 text-xs uppercase tracking-widest mt-4">Next Page ➔</button>
+      </div>
+
+      <!-- ================= PAGE 3: MUSIC PLAYER ================= -->
+      <div id="page3" class="page-container w-full flex-col items-center text-center space-y-8">
+        <span class="px-4 py-1.5 bg-blue-100 text-blue-700 text-[10px] font-black rounded-full uppercase tracking-widest">🎵 Vibe Check</span>
+        <h2 class="serif-title text-3xl font-bold text-slate-800">Aage badhne se pehle gana sunte hain!</h2>
+        
+        <!-- Takda Music Visualizer UI -->
+        <div class="w-full bg-slate-900 p-6 rounded-3xl shadow-2xl relative overflow-hidden">
+          <div class="absolute inset-0 bg-gradient-to-br from-violet-600/30 to-fuchsia-600/30"></div>
+          <div id="visualizer" class="music-bars justify-center mb-6 relative z-10">
+            <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+          </div>
+          <p class="text-white/80 text-xs font-bold tracking-widest uppercase mb-4 relative z-10">Special Song for Didi</p>
+          <button onclick="toggleAudio()" id="playBtn" class="w-16 h-16 bg-white rounded-full flex items-center justify-center text-slate-900 text-xl mx-auto shadow-lg active:scale-90 transition-all relative z-10">
+            <i class="fa-solid fa-play ml-1"></i>
+          </button>
+        </div>
+
+        <button onclick="nextPage()" class="px-8 py-3 bg-violet-500 text-white font-bold rounded-full shadow-lg active:scale-95 text-xs uppercase tracking-widest w-full">Chaliye Aage ✨</button>
+      </div>
+
+      <!-- ================= PAGE 4: SAVIOR DIDI ================= -->
+      <div id="page4" class="page-container w-full flex-col items-center text-center space-y-6">
+        <span class="px-4 py-1.5 bg-rose-100 text-rose-700 text-[10px] font-black rounded-full uppercase tracking-widest">🛡️ Caring Soul</span>
+        <h2 class="serif-title text-3xl font-bold text-slate-800">The Savior Didi!</h2>
+        
+        <div class="w-full bg-white px-5 py-6 rounded-3xl border border-rose-100 shadow-lg text-slate-700">
+          <p class="handwriting text-2xl leading-snug">
+            "Mujhe Khushi ne bataya tha ki aap use bachati ho... yani agar vo kahin fass jaye toh us situation se bachati ho, aur isse pata chalta hai ki aap kitni <strong class="text-rose-500">Kind and Caring</strong> ho!"
+          </p>
+        </div>
+
+        <div class="w-full bg-slate-50 p-4 rounded-2xl border border-slate-200">
+          <p class="text-[10px] text-slate-500 font-black uppercase tracking-widest mb-3">✨ Aapki Qualities ✨</p>
+          <div class="flex flex-wrap justify-center gap-2 text-xs font-bold text-slate-700">
+            <span class="bg-white px-3 py-1.5 rounded-lg shadow-sm border border-slate-100">💖 Kind & Caring</span>
+            <span class="bg-white px-3 py-1.5 rounded-lg shadow-sm border border-slate-100">💪 Hardworking</span>
+            <span class="bg-white px-3 py-1.5 rounded-lg shadow-sm border border-slate-100">📋 Responsible</span>
+            <span class="bg-white px-3 py-1.5 rounded-lg shadow-sm border border-slate-100">🤝 Helpful</span>
+            <span class="bg-white px-3 py-1.5 rounded-lg shadow-sm border border-slate-100 w-full text-center">🌟 Positive Attitude ho!</span>
+          </div>
+        </div>
+        <button onclick="nextPage()" class="px-8 py-3 bg-slate-900 text-white font-bold rounded-full shadow-lg active:scale-95 text-xs uppercase tracking-widest">Next ➔</button>
+      </div>
+
+      <!-- ================= PAGE 5: COOKING QUEEN ================= -->
+      <div id="page5" class="page-container w-full flex-col items-center text-center space-y-6">
+        <span class="px-4 py-1.5 bg-emerald-100 text-emerald-700 text-[10px] font-black rounded-full uppercase tracking-widest">🍔 Masterchef</span>
+        <h2 class="serif-title text-3xl font-bold text-slate-800">Best Cooking Award 🏆</h2>
+        
+        <div class="w-full bg-[#f0fdf4] p-6 rounded-3xl border border-emerald-200 shadow-md">
+          <div class="text-6xl mb-4 animate-bounce">🍔</div>
+          <p class="handwriting text-2xl text-slate-700 leading-snug">
+            "Khushi ne bhi batya tha ki aap ko cooking aati hai and apne ek baar burger bhi banaya tha and vo school bhi layi thi mene bhi thoda sa khaya tha bahut yummy 😋 tha. Best cooking award toh apko milna chahiye tha!"
+          </p>
+        </div>
+        <button onclick="nextPage()" class="px-8 py-3 bg-emerald-500 text-white font-bold rounded-full shadow-lg active:scale-95 text-xs uppercase tracking-widest w-full">View Photos 📸</button>
+      </div>
+
+      <!-- ================= PAGE 6: MEMORY PHOTOS ================= -->
+      <div id="page6" class="page-container w-full flex-col items-center text-center space-y-4">
+        <span class="px-4 py-1.5 bg-purple-100 text-purple-700 text-[10px] font-black rounded-full uppercase tracking-widest">📸 Sweet Memories</span>
+        
+        <div class="relative w-full aspect-[4/5] rounded-3xl overflow-hidden shadow-2xl border-4 border-white bg-slate-100">
+          <img id="mSlide1" src="memory1.jpg" alt="Memory 1" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-500 opacity-100">
+          <img id="mSlide2" src="memory2.jpg" alt="Memory 2" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-500 opacity-0">
+          <img id="mSlide3" src="memory3.jpg" alt="Memory 3" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-500 opacity-0">
+          <img id="mSlide4" src="memory4.jpg" alt="Memory 4" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-500 opacity-0">
+          <img id="mSlide5" src="memory5.jpg" alt="Memory 5" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-500 opacity-0">
+        </div>
+
+        <div class="flex gap-2 mb-2">
+          <button onclick="prevMem()" class="w-10 h-10 bg-white rounded-full shadow-md text-slate-800"><i class="fa-solid fa-angle-left"></i></button>
+          <button onclick="nextMem()" class="w-10 h-10 bg-white rounded-full shadow-md text-slate-800"><i class="fa-solid fa-angle-right"></i></button>
+        </div>
+
+        <p class="handwriting text-xl text-slate-700 font-bold px-2">
+          "har photos mein khushi, aap and apki family kitni achi hai agar mein jhooth bol raha hu toh aap sari photos dekh lo"
+        </p>
+
+        <button onclick="nextPage()" class="px-8 py-3 bg-purple-500 text-white font-bold rounded-full shadow-lg active:scale-95 text-xs uppercase tracking-widest w-full">Watch Video 🎬</button>
+      </div>
+
+      <!-- ================= PAGE 7: VIDEO ================= -->
+      <div id="page7" class="page-container w-full flex-col items-center text-center space-y-6">
+        <span class="px-4 py-1.5 bg-sky-100 text-sky-700 text-[10px] font-black rounded-full uppercase tracking-widest">🎬 Didi's Video</span>
+        <h2 class="serif-title text-3xl font-bold text-slate-800">Special Clip</h2>
+        
+        <div class="w-full bg-white p-2 rounded-3xl shadow-xl">
+          <video controls class="w-full rounded-2xl bg-slate-900 aspect-video object-cover">
+            <source src="didi_video.mp4" type="video/mp4">
+          </video>
+        </div>
+
+        <p class="handwriting text-2xl text-slate-600 font-bold">"Kuch purane din, purani yaadein video mein."</p>
+        <button onclick="nextPage()" class="px-8 py-3 bg-sky-500 text-white font-bold rounded-full shadow-lg active:scale-95 text-xs uppercase tracking-widest w-full">Open Album 📖</button>
+      </div>
+
+      <!-- ================= PAGE 8: REAL BOOK ALBUM (RIGHT PAGE ONLY) ================= -->
+      <div id="page8" class="page-container w-full flex-col items-center text-center space-y-4">
+        <span class="px-4 py-1.5 bg-fuchsia-100 text-fuchsia-700 text-[10px] font-black rounded-full uppercase tracking-widest">📖 Mega Album</span>
+        
+        <!-- REAL BOOK FEEL: Book bound on the left, turning pages -->
+        <div class="album-book mt-2" id="albumBook">
+          <!-- 10 Pages for the album -->
+          <div class="album-page active" id="albPage1">
+            <img src="album1.jpg" class="album-img" alt="Album 1">
+            <div class="absolute bottom-2 right-4 text-[9px] font-bold text-slate-400 bg-white/80 px-2 py-1 rounded-full">Page 1</div>
+          </div>
+          <div class="album-page next-ready" id="albPage2">
+            <img src="album2.jpg" class="album-img" alt="Album 2">
+            <div class="absolute bottom-2 right-4 text-[9px] font-bold text-slate-400 bg-white/80 px-2 py-1 rounded-full">Page 2</div>
+          </div>
+          <div class="album-page hidden-page" id="albPage3">
+            <img src="album3.jpg" class="album-img" alt="Album 3">
+            <div class="absolute bottom-2 right-4 text-[9px] font-bold text-slate-400 bg-white/80 px-2 py-1 rounded-full">Page 3</div>
+          </div>
+          <div class="album-page hidden-page" id="albPage4">
+            <img src="album4.jpg" class="album-img" alt="Album 4">
+            <div class="absolute bottom-2 right-4 text-[9px] font-bold text-slate-400 bg-white/80 px-2 py-1 rounded-full">Page 4</div>
+          </div>
+          <div class="album-page hidden-page" id="albPage5">
+            <img src="album5.jpg" class="album-img" alt="Album 5">
+            <div class="absolute bottom-2 right-4 text-[9px] font-bold text-slate-400 bg-white/80 px-2 py-1 rounded-full">Page 5</div>
+          </div>
+          <div class="album-page hidden-page" id="albPage6">
+            <img src="album6.jpg" class="album-img" alt="Album 6">
+            <div class="absolute bottom-2 right-4 text-[9px] font-bold text-slate-400 bg-white/80 px-2 py-1 rounded-full">Page 6</div>
+          </div>
+          <div class="album-page hidden-page" id="albPage7">
+            <img src="album7.jpg" class="album-img" alt="Album 7">
+            <div class="absolute bottom-2 right-4 text-[9px] font-bold text-slate-400 bg-white/80 px-2 py-1 rounded-full">Page 7</div>
+          </div>
+          <div class="album-page hidden-page" id="albPage8">
+            <img src="album8.jpg" class="album-img" alt="Album 8">
+            <div class="absolute bottom-2 right-4 text-[9px] font-bold text-slate-400 bg-white/80 px-2 py-1 rounded-full">Page 8</div>
+          </div>
+          <div class="album-page hidden-page" id="albPage9">
+            <img src="album9.jpg" class="album-img" alt="Album 9">
+            <div class="absolute bottom-2 right-4 text-[9px] font-bold text-slate-400 bg-white/80 px-2 py-1 rounded-full">Page 9</div>
+          </div>
+          <div class="album-page hidden-page" id="albPage10">
+            <img src="album10.jpg" class="album-img" alt="Album 10">
+            <div class="absolute bottom-2 right-4 text-[9px] font-bold text-slate-400 bg-white/80 px-2 py-1 rounded-full">Page 10</div>
+          </div>
+        </div>
+
+        <div class="flex gap-4 mt-2">
+          <button onclick="prevAlbumPage()" class="px-5 py-2 bg-white text-slate-700 shadow-md rounded-full text-xs font-bold active:scale-95 transition-transform"><i class="fa-solid fa-angle-left"></i> Prev</button>
+          <button onclick="nextAlbumPage()" class="px-5 py-2 bg-fuchsia-500 text-white shadow-md rounded-full text-xs font-bold active:scale-95 transition-transform">Next Page <i class="fa-solid fa-angle-right"></i></button>
+        </div>
+
+        <p class="handwriting text-[20px] text-slate-700 font-bold px-2 leading-snug">
+          "ek album jisme sab ek sath hai or isse mene sepical bana ki koshish bhi ki hai aap dekho"
+        </p>
+
+        <button onclick="nextPage()" class="text-xs font-bold text-fuchsia-600 underline mt-2">Finish Reading ➔</button>
+      </div>
+
+      <!-- ================= PAGE 9: ENDING ================= -->
+      <div id="page9" class="page-container w-full flex-col items-center text-center space-y-6">
+        <span class="px-4 py-1.5 bg-rose-100 text-rose-700 text-[10px] font-black rounded-full uppercase tracking-widest">💌 Final Note</span>
+        <h2 class="serif-title text-3xl font-bold text-slate-800">Ek Aakhiri Baat...</h2>
+        
+        <div class="w-full bg-[#fff1f2] p-6 rounded-3xl border border-rose-200 shadow-md">
+          <p class="handwriting text-2xl text-slate-700 leading-relaxed">
+            And sorry agar meri koi si bhi baat ka bura laga ho ya mene kuch galat likha ho... <br><br>
+            Aapka bohot bohot <strong class="text-rose-600">Thanks</strong> apna time dene ke liye. Bas hamesha khush rahiye aur muskurati rahiye! ✨
+          </p>
+        </div>
+
+        <button onclick="burstConfetti()" class="w-full py-4 bg-gradient-to-r from-rose-400 to-pink-500 text-white font-black rounded-full shadow-lg active:scale-95 text-xs uppercase tracking-widest">
+          Shower Magic 🎉
+        </button>
+      </div>
+
+    </div>
+
+    <!-- FOOTER -->
+    <div class="px-6 py-3 bg-slate-800 text-center text-white/80 text-[10px] uppercase font-bold tracking-widest z-20">
+      Made specially for Didi 🌸
+    </div>
+  </div>
+
+  <!-- AUDIO TAG -->
+  <audio id="bgAudio" loop>
+    <source src="didi_song.mp3" type="audio/mp3">
+  </audio>
+
+  <script>
+    // --- State Variables ---
+    let currentPage = 1;
+    const totalPages = 9;
+    const PWD = "guptaji46";
+    let memIdx = 1;
+    
+    // --- Navigation Logic ---
+    function updateHeader() {
+      document.getElementById('pageIndicator').innerText = `STEP ${currentPage} / 9`;
+      const backBtn = document.getElementById('backBtn');
+      if(currentPage > 1) {
+        backBtn.classList.remove('opacity-0', 'pointer-events-none');
+      } else {
+        backBtn.classList.add('opacity-0', 'pointer-events-none');
+      }
+    }
+
+    function switchPage(toPage) {
+      document.getElementById(`page${currentPage}`).classList.remove('active');
+      currentPage = toPage;
+      document.getElementById(`page${currentPage}`).classList.add('active');
+      updateHeader();
+    }
+
+    function nextPage() { if(currentPage < totalPages) switchPage(currentPage + 1); }
+    function prevPage() { if(currentPage > 1) switchPage(currentPage - 1); }
+
+    // --- Vault Unlock Logic ---
+    function unlockVault() {
+      const input = document.getElementById('passInput').value;
+      const box = document.getElementById('lockWrapper');
+      const err = document.getElementById('errorTxt');
+      
+      if(input === PWD) {
+        box.classList.add('unlocked');
+        err.style.opacity = '0';
+        burstConfetti(30);
+        setTimeout(() => nextPage(), 1200);
+      } else {
+        box.classList.add('shake-err');
+        err.style.opacity = '1';
+        setTimeout(() => box.classList.remove('shake-err'), 400);
+      }
+    }
+
+    // --- Takda Music Player Logic ---
+    const audio = document.getElementById('bgAudio');
+    let isPlaying = false;
+    function toggleAudio() {
+      const visualizer = document.getElementById('visualizer');
+      const btnIcon = document.querySelector('#playBtn i');
+      
+      if(!isPlaying) {
+        audio.play().catch(e => alert("Add 'didi_song.mp3' file in the folder!"));
+        visualizer.classList.add('playing');
+        btnIcon.className = "fa-solid fa-pause ml-0";
+        isPlaying = true;
+      } else {
+        audio.pause();
+        visualizer.classList.remove('playing');
+        btnIcon.className = "fa-solid fa-play ml-1";
+        isPlaying = false;
+      }
+    }
+
+    // --- Memory Carousel Logic (P6) ---
+    function showMem(idx) {
+      for(let i=1; i<=5; i++) {
+        const el = document.getElementById(`mSlide${i}`);
+        if(el) el.style.opacity = i === idx ? '1' : '0';
+      }
+    }
+    function nextMem() { memIdx = memIdx >= 5 ? 1 : memIdx + 1; showMem(memIdx); }
+    function prevMem() { memIdx = memIdx <= 1 ? 5 : memIdx - 1; showMem(memIdx); }
+
+    // --- REAL BOOK ALBUM LOGIC (P8) ---
+    let currentAlbumIdx = 1;
+    const totalAlbumPages = 10;
+
+    function initAlbum() {
+      for(let i=1; i<=totalAlbumPages; i++){
+        let page = document.getElementById('albPage'+i);
+        if(i === currentAlbumIdx) {
+          page.className = 'album-page active';
+        } else if (i === currentAlbumIdx + 1) {
+          page.className = 'album-page next-ready';
+        } else if (i < currentAlbumIdx) {
+          page.className = 'album-page flipped';
+        } else {
+          page.className = 'album-page hidden-page';
+        }
+      }
+    }
+
+    function nextAlbumPage() {
+      if(currentAlbumIdx < totalAlbumPages) {
+        document.getElementById('albPage'+currentAlbumIdx).className = 'album-page flipped';
+        currentAlbumIdx++;
+        document.getElementById('albPage'+currentAlbumIdx).className = 'album-page active';
+        if(currentAlbumIdx + 1 <= totalAlbumPages) {
+          document.getElementById('albPage'+(currentAlbumIdx+1)).className = 'album-page next-ready';
+        }
+      } else {
+        // Reset to first page
+        currentAlbumIdx = 1;
+        initAlbum();
+      }
+    }
+
+    function prevAlbumPage() {
+      if(currentAlbumIdx > 1) {
+        if(currentAlbumIdx + 1 <= totalAlbumPages) {
+          document.getElementById('albPage'+(currentAlbumIdx+1)).className = 'album-page hidden-page';
+        }
+        document.getElementById('albPage'+currentAlbumIdx).className = 'album-page next-ready';
+        currentAlbumIdx--;
+        document.getElementById('albPage'+currentAlbumIdx).className = 'album-page active';
+      }
+    }
+
+    // Run init on load
+    window.onload = initAlbum;
+
+    // --- Premium Confetti ---
+    function burstConfetti(amount = 40) {
+      const colors = ['#f472b6', '#c084fc', '#60a5fa', '#fde047'];
+      for(let i=0; i<amount; i++) {
+        let p = document.createElement('div');
+        p.className = 'particle';
+        p.style.background = colors[Math.floor(Math.random() * colors.length)];
+        p.style.left = '50%'; p.style.top = '50%';
+        document.body.appendChild(p);
+        
+        let angle = Math.random() * Math.PI * 2;
+        let velocity = 50 + Math.random() * 100;
+        let x = Math.cos(angle) * velocity;
+        let y = Math.sin(angle) * velocity;
+        
+        setTimeout(() => {
+          p.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px)) scale(0)`;
+          p.style.transition = 'all 1s cubic-bezier(0.1, 0.8, 0.3, 1)';
+          p.style.opacity = '0';
+        }, 10);
+        setTimeout(() => p.remove(), 1000);
+      }
+    }
+  </script>
+</body>
+</html>
+
+
+```
