@@ -283,18 +283,21 @@
 
       <!-- ================= PAGE 7: VIDEO ================= -->
       <div id="page7" class="page-container w-full flex-col items-center text-center space-y-6">
-        <span class="px-4 py-1.5 bg-sky-100 text-sky-700 text-[10px] font-black rounded-full uppercase tracking-widest">🎬 Didi's Video</span>
-        <h2 class="serif-title text-3xl font-bold text-slate-800">Special Clip</h2>
-        
-        <div class="w-full bg-white p-2 rounded-3xl shadow-xl">
-          <video controls class="w-full rounded-2xl bg-slate-900 aspect-video object-cover">
-            <source src="didi_video.mp4" type="video/mp4">
-          </video>
-        </div>
+  <span class="px-4 py-1.5 bg-sky-100 text-sky-700 text-[10px] font-black rounded-full uppercase tracking-widest">🎬 Didi's Video</span>
+  <h2 class="serif-title text-3xl font-bold text-slate-800">Special Clip</h2>
+  
+  <!-- Yahan max-w-[280px] aur mx-auto lagaya hai -->
+  <div class="w-full max-w-[280px] bg-white p-2 rounded-3xl shadow-xl mx-auto">
+    <!-- Yahan aspect-[3/4] kiya hai -->
+    <video controls class="w-full rounded-2xl bg-slate-900 aspect-[3/4] object-cover">
+      <source src="didi_video.mp4" type="video/mp4">
+    </video>
+  </div>
 
-        <p class="handwriting text-2xl text-slate-600 font-bold">"Kuch purane din, purani yaadein video mein."</p>
-        <button onclick="nextPage()" class="px-8 py-3 bg-sky-500 text-white font-bold rounded-full shadow-lg active:scale-95 text-xs uppercase tracking-widest w-full">Open Album 📖</button>
+  <p class="handwriting text-2xl text-slate-600 font-bold">"Kuch purane din, purani yaadein video mein."</p>
+  <button onclick="nextPage()" class="px-8 py-3 bg-sky-500 text-white font-bold rounded-full shadow-lg active:scale-95 text-xs uppercase tracking-widest w-full">Open Album 📖</button>
       </div>
+      
 
       <!-- ================= PAGE 8: REAL BOOK ALBUM (RIGHT PAGE ONLY) ================= -->
       <div id="page8" class="page-container w-full flex-col items-center text-center space-y-4">
